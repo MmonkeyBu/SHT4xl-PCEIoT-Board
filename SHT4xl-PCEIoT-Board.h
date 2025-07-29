@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#define SHT4XL_I2C_ADRESS 0x44 // Endereço I2c indicado no datasheet do sensor
+#define SHT4XL_I2C_ADDRESS 0x44 // Endereço I2c indicado no datasheet do sensor
 
 //Nivel da precisão 
 typedef enum {
