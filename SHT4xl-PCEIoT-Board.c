@@ -45,15 +45,35 @@ bool sht4x_reset(void) {
 }
 
 // Ler temperatura e umidade
-bool sht4xl_Ler_TempHum(float *temperature, float *humidity) {
-    uint8_t cmd = CMD_MEASURE_HIGH_PREC;
+bool sht4xl_Ler_TempHum(SHT4x_Precision precision, float *temperature, float *humidity) {
+    uint8_t cmd;
+    uint16_t delay_ms;
+
+    // Seleciona o comando e o delay com base na precisão escolhida
+    switch (precision) {
+        case PRECISION_HIGH:
+            cmd = CMD_MEASURE_HIGH_PREC;
+            delay_ms = DELAY_HIGH_PREC_MS;
+            break;
+        case PRECISION_MEDIUM:
+            cmd = CMD_MEASURE_MEDIUM_PREC;
+            delay_ms = DELAY_MEDIUM_PREC_MS;
+            break;
+        case PRECISION_LOW:
+            cmd = CMD_MEASURE_LOW_PREC;
+            delay_ms = DELAY_LOW_PREC_MS;
+            break;
+        default:
+            return false; // Caso um valor inválido seja passado
+    }
+
     uint8_t rx[6];
 
     // Envia comando
     if (i2c_write_blocking(I2C_PORT, SHT4XL_I2C_ADRESS, &cmd, 1, false) != 1)
         return false;
 
-    sleep_ms(MEASURE_DELAY_MS);
+    sleep_ms(delay_ms);
 
     // Lê 6 bytes: 2 temp + CRC, 2 humi + CRC
     if (i2c_read_blocking(I2C_PORT, SHT4XL_I2C_ADRESS, rx, 6, false) != 6)
@@ -67,8 +87,13 @@ bool sht4xl_Ler_TempHum(float *temperature, float *humidity) {
     uint16_t raw_temp = (rx[0] << 8) | rx[1];
     uint16_t raw_humi = (rx[3] << 8) | rx[4];
 
+    //conta no data sheet
     *temperature = -45.0f + 175.0f * ((float)raw_temp / 65535.0f);
-    *humidity    = 100.0f * ((float)raw_humi / 65535.0f);
+    *humidity    = -6.0f + 125.0f * ((float)raw_humi / 65535.0f);
+
+    // Garante que os valores de humidade fiquem entre 0 e 100
+    if (*humidity > 100.0f) *humidity = 100.0f;
+    if (*humidity < 0.0f) *humidity = 0.0f;
 
     return true;
 }
