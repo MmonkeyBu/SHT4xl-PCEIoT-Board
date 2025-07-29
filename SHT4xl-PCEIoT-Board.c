@@ -41,7 +41,7 @@ bool sht4x_init(void) {
 //para resetar 
 bool sht4x_reset(void) {
     uint8_t cmd = CMD_RESET;
-    return i2c_write_blocking(I2C_PORT, SHT4XL_I2C_ADRESS, &cmd, 1, false) == 1;
+    return i2c_write_blocking(I2C_PORT, SHT4XL_I2C_ADDRESS, &cmd, 1, false) == 1;
 }
 
 // Ler temperatura e umidade
@@ -70,13 +70,13 @@ bool sht4xl_Ler_TempHum(SHT4x_Precision precision, float *temperature, float *hu
     uint8_t rx[6];
 
     // Envia comando
-    if (i2c_write_blocking(I2C_PORT, SHT4XL_I2C_ADRESS, &cmd, 1, false) != 1)
+    if (i2c_write_blocking(I2C_PORT, SHT4XL_I2C_ADDRESS, &cmd, 1, false) != 1)
         return false;
 
     sleep_ms(delay_ms);
 
     // Lê 6 bytes: 2 temp + CRC, 2 humi + CRC
-    if (i2c_read_blocking(I2C_PORT, SHT4XL_I2C_ADRESS, rx, 6, false) != 6)
+    if (i2c_read_blocking(I2C_PORT, SHT4XL_I2C_ADDRESS, rx, 6, false) != 6)
         return false;
 
     // Verifica CRC dos dois blocos
