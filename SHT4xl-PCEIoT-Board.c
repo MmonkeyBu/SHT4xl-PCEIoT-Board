@@ -6,8 +6,8 @@
 // I2C defines
 // Pins can be changed, see the GPIO function select table in the datasheet for information on GPIO assignments
 #define I2C_PORT i2c0
-#define I2C_SDA 4
-#define I2C_SCL 5
+#define I2C_SDA 8
+#define I2C_SCL 9
 
 // Comandos
 #define CMD_MEASURE_HIGH_PREC  0xFD
