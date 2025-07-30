@@ -3,9 +3,7 @@
 #include "hardware/i2c.h"
 #include "SHT4xl-PCEIoT-Board.h"
 
-#define I2C_PORT i2c0
-#define I2C_SDA 8
-#define I2C_SCL 9
+
 
 // Comandos de Medição por Precisao
 #define CMD_MEASURE_HIGH_PREC     0xFD
