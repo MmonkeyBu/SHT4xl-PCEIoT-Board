@@ -2,6 +2,13 @@
 #include "pico/stdlib.h"
 #include "SHT4xl-PCEIoT-Board.h" 
 
+
+//Setagem de pinos
+
+#define I2C_PORT i2c0
+#define I2C_SDA 8
+#define I2C_SCL 9
+
 int main() {
 
     stdio_init_all();
