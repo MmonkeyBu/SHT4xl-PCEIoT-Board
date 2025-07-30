@@ -1,20 +1,36 @@
-#ifndef SHT4XL_PCEIOT_BOARD_H
-#define SHT4XL_PCEIOT_BOARD_H
+#ifndef SHT4X_PCEIOT_BOARD_H
+#define SHT4X_PCEIOT_BOARD_H
 
-#include <stdio.h>
 #include <stdbool.h>
 
-#define SHT4XL_I2C_ADDRESS 0x44 // Endereço I2c indicado no datasheet do sensor
+// Endereço I2C padrão do SHT4x
+#define SHT4X_I2C_ADDRESS 0x44
 
-//Nivel da precisão 
+// Enumeração para os níveis de precisão da medição
 typedef enum {
-    SHT4X_HIGH_PRECISION,
-    SHT4X_MEDIUM_PRECISION,
-    SHT4X_LOW_PRECISION
+    PRECISION_HIGH,
+    PRECISION_MEDIUM,
+    PRECISION_LOW
 } SHT4x_Precision;
 
-bool sht4xl_init(void);
-bool sht4xl_Ler_TempHum(float *temperature, float *humidity);
-bool sht4xl_reset(void);
-bool sht4xl_Aquecer(void);
-#endif
+// Enumeração para os modos de aquecimento
+typedef enum {
+    HEATER_HIGH_1S,
+    HEATER_HIGH_0_1S,
+    HEATER_MEDIUM_1S,
+    HEATER_MEDIUM_0_1S,
+    HEATER_LOW_1S,
+    HEATER_LOW_0_1S
+} SHT4x_HeaterMode;
+
+
+//Inicializa a comunicação I2C e reseta o sensor
+bool sht4x_init(void);
+ //Envia um comando de soft-reset para o sensor
+bool sht4x_reset(void);
+ //Le temperatura e umidade com um nível de precisao 
+bool sht4x_read_temp_hum(SHT4x_Precision precision, float *temperature, float *humidity);
+//Le temperatura e umidade utilizando um modo de aquecedor
+bool sht4x_read_with_heater(SHT4x_HeaterMode mode, float *temperature, float *humidity);
+
+#endif // SHT4X_PCEIOT_BOARD_H
