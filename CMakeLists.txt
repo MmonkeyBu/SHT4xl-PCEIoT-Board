@@ -35,13 +35,13 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(SHT4xl-PCEIoT-Board SHT4xl-PCEIoT-Board.c )
+add_executable(SHT4xl-PCEIoT-Board SHT4xl-PCEIoT-Board.c main.c)
 
 pico_set_program_name(SHT4xl-PCEIoT-Board "SHT4xl-PCEIoT-Board")
 pico_set_program_version(SHT4xl-PCEIoT-Board "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(SHT4xl-PCEIoT-Board 0)
+pico_enable_stdio_uart(SHT4xl-PCEIoT-Board 1)
 pico_enable_stdio_usb(SHT4xl-PCEIoT-Board 0)
 
 # Add the standard library to the build
