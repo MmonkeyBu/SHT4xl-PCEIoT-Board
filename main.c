@@ -1,18 +1,18 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "SHT4xl-PCEIoT-Board.h" 
+#include "hardware/uart.h"
 
-
-//Setagem de pinos
-
-#define I2C_PORT i2c0
-#define I2C_SDA 8
-#define I2C_SCL 9
+#define UART_ID uart1
+#define BAUD_RATE 115200
+#define UART_TX_PIN 8 
+#define UART_RX_PIN 9 
 
 int main() {
 
     stdio_init_all();
     sleep_ms(2000); 
+    
 
     if (!sht4x_init()) {
         printf("Falha ao iniciar o sensor SHT4x. Verifique as conexoes.\n");
