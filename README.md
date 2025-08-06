@@ -10,8 +10,6 @@ Esta é uma biblioteca modularizada em C desenvolvida para facilitar o uso da fa
 📁 sht4x/
 ├── sht4x.h
 ├── sht4x.c
-├── sht4x_def.h
-├── sht4x_commands.h
 └── README.md
 ```
 
