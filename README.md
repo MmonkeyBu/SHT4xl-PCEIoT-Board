@@ -1,6 +1,6 @@
 # Biblioteca SHT4xl-PCEIoT-Board para Raspberry Pi Pico
 
-Esta é uma biblioteca em C para a placa Raspberry Pi Pico que permite a comunicação e leitura de dados do sensor de temperatura e umidade SHT4x através do protocolo I2C.
+Esta é uma biblioteca em C para a placa PCEIoT_Board - Raspberry pi pico W que permite a comunicação e leitura de dados do sensor de temperatura e umidade SHT4x através do protocolo I2C.
 
 ## Funcionalidades
 
