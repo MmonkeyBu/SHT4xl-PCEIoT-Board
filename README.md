@@ -1,105 +1,86 @@
-# Biblioteca SHT4x para Raspberry Pi Pico W (C/C++)
+# Biblioteca SHT4xl-PCEIoT-Board para Raspberry Pi Pico
 
-Esta é uma biblioteca modularizada em C desenvolvida para facilitar o uso da família de sensores de temperatura e umidade **SHT4x (SHT40, SHT41, SHT45)** com o **Raspberry Pi Pico W**. A biblioteca abstrai a comunicação I2C e fornece uma interface simples e eficiente para o usuário configurar os pinos desejados e começar a utilizar o sensor com poucas linhas de código.
+Esta é uma biblioteca em C para a placa Raspberry Pi Pico que permite a comunicação e leitura de dados do sensor de temperatura e umidade SHT4x através do protocolo I2C.
 
----
+## Funcionalidades
 
-## 📦 Estrutura do Projeto
+* Inicialização e reset do sensor.
+* Medição de temperatura e umidade com três níveis de precisão (alta, média e baixa).
+* Medição de temperatura e umidade com o aquecedor interno ativado em diferentes modos e durações.
+* Verificação de integridade dos dados utilizando CRC-8, conforme especificado no datasheet do sensor.
 
-```
-📁 sht4x/
-├── sht4x.h
-├── sht4x.c
-└── README.md
-```
+## Tipos de Dados
 
----
+A biblioteca define enums para facilitar o uso das diferentes configurações de medição.
 
-## 🚀 Como Usar
+### `SHT4x_Precision`
 
-### 1. **Clone o repositório e inclua os arquivos no seu projeto**
-Coloque os arquivos `sht4x.c`, `sht4x.h`, `sht4x_def.h` e `sht4x_commands.h` no seu projeto.
+Enumeração para selecionar o nível de precisão da medição. Os diferentes modos resultam em diferentes tempos de medição e consumo de energia.
 
-### 2. **Inclua a biblioteca no seu `CMakeLists.txt`**
+| Nível de Precisão | Comando I2C | Tempo de Medição (típico) |
+| :---------------- | :---------- | :------------------------------------- |
+| `PRECISION_HIGH`  | `0xFD`      | 8.3 ms (máx)                           |
+| `PRECISION_MEDIUM`| `0xF6`      | 4.5 ms (máx)                           |
+| `PRECISION_LOW`   | `0xE0`      | 1.6 ms (máx)                           |
 
-```cmake
-add_executable(seu_programa
-    main.c
-    sht4x.c
-)
+### `SHT4x_HeaterMode`
 
-target_include_directories(seu_programa PRIVATE .)
-```
+Enumeração para ativar o aquecedor interno do sensor para remover condensação ou para outras aplicações, usado em ambiente umidos. Cada modo ativa o aquecedor por uma duração específica e com uma potência determinada.
 
-### 3. **Configure os pinos I2C na sua `main.c`**
+| Modo de Aquecedor         | Comando I2C | Potência (típica) | Duração do Aquecedor |
+| :------------------------ | :---------- | :----------------------------- | :--------------------------------- |
+| `HEATER_HIGH_1S`          | `0x39`      | 200 mW                         | 1 segundo                          |
+| `HEATER_HIGH_0_1S`        | `0x32`      | 200 mW                         | 0.1 segundo                        |
+| `HEATER_MEDIUM_1S`        | `0x2F`      | 110 mW                         | 1 segundo                          |
+| `HEATER_MEDIUM_0_1S`      | `0x24`      | 110 mW                         | 0.1 segundo                        |
+| `HEATER_LOW_1S`           | `0x1E`      | 20 mW                          | 1 segundo                          |
+| `HEATER_LOW_0_1S`         | `0x15`      | 20 mW                          | 0.1 segundo                        |
 
-```c
-#include "sht4x.h"
+## Funções Públicas
 
-int main() {
-    stdio_init_all();
+### `bool sht4x_init(void)`
 
-    sht4x_t sensor = sht4x_create(i2c0, 4, 5); // SDA = GP4, SCL = GP5
-    sht4x_init(&sensor);
+Inicializa a interface I2C na Raspberry Pi Pico, configurando os pinos SDA (GPIO 8) e SCL (GPIO 9) e a velocidade de 100 kHz. Em seguida, chama `sht4x_reset` para garantir que o sensor esteja em um estado conhecido antes da primeira medição.
 
-    while (1) {
-        sht4x_measure_blocking_read(&sensor);
-        printf("Temperatura: %.2f °C | Umidade: %.2f %%
-", sensor.temperature, sensor.humidity);
-        sleep_ms(1000);
-    }
-}
-```
+* **Retorno:** `true` se a inicialização e o reset forem bem-sucedidos; `false` caso contrário.
 
----
+### `bool sht4x_reset(void)`
 
-## 🔧 Principais Funções
+Envia um comando de software reset (`0x94`) para o sensor SHT4x através da interface I2C. Após o comando, a função aguarda 2 ms para que o sensor retorne ao estado de repouso.
 
-| Função                            | Descrição |
-|----------------------------------|-----------|
-| `sht4x_t sht4x_create(...)`      | Cria e inicializa a estrutura do sensor com os pinos I2C desejados. |
-| `bool sht4x_init(...)`           | Envia o comando de soft reset e verifica a conexão com o sensor. |
-| `bool sht4x_measure_blocking_read(...)` | Realiza uma medição de temperatura e umidade. |
-| `float sht4x_calc_temperature(...)` | Converte os dados brutos em temperatura. |
-| `float sht4x_calc_humidity(...)` | Converte os dados brutos em umidade relativa. |
+* **Retorno:** `true` se o comando for enviado com sucesso; `false` caso contrário.
 
----
+### `bool sht4x_read_temp_hum(SHT4x_Precision precision, float *temperature, float *humidity)`
 
-## 📌 Definições Importantes
+Inicia uma medição de temperatura e umidade com base no nível de precisão fornecido. A função envia o comando de medição correspondente, aguarda o tempo necessário para a medição, lê os 6 bytes de dados e verifica a integridade com o checksum CRC-8. Por fim, converte os valores brutos para as unidades corretas.
 
-O arquivo `sht4x_def.h` contém:
-- Definições de status do sensor (`SHT4X_OK`, `SHT4X_ERR`)
-- Estrutura `sht4x_t`
-- Enum `sht4x_cmd_t` com os principais comandos de medição
+* **`precision`:** O nível de precisão desejado (`PRECISION_HIGH`, `PRECISION_MEDIUM` ou `PRECISION_LOW`).
+* **`*temperature`:** Ponteiro para a variável onde a temperatura em °C será armazenada.
+* **`*humidity`:** Ponteiro para a variável onde a umidade relativa em %RH será armazenada.
+* **Retorno:** `true` se a medição for bem-sucedida, os dados forem validados e as conversões realizadas; `false` caso contrário.
 
-O arquivo `sht4x_commands.h` contém:
-- Constantes com os valores hexadecimais dos comandos suportados pelo sensor
+### `bool sht4x_read_with_heater(SHT4x_HeaterMode mode, float *temperature, float *humidity)`
 
----
+Ativa o aquecedor interno do sensor no modo especificado. O sensor executa o aquecimento e, ao término, realiza uma medição de alta precisão. Os dados são lidos, validados com CRC-8 e convertidos. O aquecedor é desativado automaticamente pelo sensor após a medição.
 
-## 🧪 Testado com:
+* **`mode`:** O modo de aquecimento desejado (ex: `HEATER_HIGH_1S`).
+* **`*temperature`:** Ponteiro para a variável onde a temperatura em °C será armazenada.
+* **`*humidity`:** Ponteiro para a variável onde a umidade relativa em %RH será armazenada.
+* **Retorno:** `true` se a medição e a conversão forem bem-sucedidas; `false` caso contrário.
 
-- Raspberry Pi Pico W
-- Sensor SHT45 via I2C
-- SDK Pico C/C++ (versão 1.5.1)
-- VSCode + CMake
+## Conversão de Dados e CRC
 
----
+A biblioteca implementa o algoritmo CRC-8 e as fórmulas de conversão de dados do datasheet do SHT4x.
 
-## 🛠️ A Fazer
+### Conversão
 
-- Suporte a medições com heater ativado
-- Suporte a múltiplos sensores no mesmo barramento
-- Implementar leitura de status do sensor
+Os valores brutos (`raw_temp` e `raw_humi`) são convertidos para temperatura e umidade usando as seguintes fórmulas, conforme o datasheet:
 
----
+* **Temperatura (°C):** `T = -45 + 175 * (raw_temp / 65535)`
+* **Umidade Relativa (%RH):** `RH = -6 + 125 * (raw_humi / 65535)`
 
-## 🤝 Contribuições
+A umidade relativa é ajustada para permanecer no intervalo de 0% a 100%.
 
-Contribuições são bem-vindas! Sinta-se à vontade para abrir _issues_ ou enviar _pull requests_.
+### Checksum CRC-8
 
----
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT.
+A comunicação I2C do SHT4x inclui um checksum de 8 bits para cada palavra de 16 bits de dados. A biblioteca usa o mesmo polinômio (`0x31`) e parâmetros (`Initialization = 0xFF`). A função `sht4x_crc8` calcula e verifica o CRC para garantir a confiabilidade dos dados lidos.
